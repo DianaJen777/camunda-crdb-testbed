@@ -1,0 +1,41 @@
+# PostgreSQL 16 control instance.
+#
+# MANDATORY. Every L1 test case runs against both CockroachDB and this control.
+# Numbers without a baseline argue against us: "CRDB did 40 PI/s" means nothing;
+# "40 PI/s vs Postgres 55 PI/s, while surviving a node kill" is a story.
+#
+#   SQL: localhost:5432  (db: appdb, user: app_user, password: app_pass)
+#
+# Note: PostgreSQL defaults to READ COMMITTED, so the control has no A/B arm.
+# That asymmetry is itself a finding worth stating in the write-up.
+#
+# Start AFTER the CRDB stack, since it joins that external network:
+#   cd crdb && docker compose up -d && cd ../control && docker compose up -d
+
+name: camunda-crdb-control
+
+networks:
+  camunda-crdb:
+    external: true
+    name: camunda-crdb
+
+services:
+  pg-control:
+    image: postgres:16
+    container_name: pg-control
+    hostname: pg-control
+    networks: [camunda-crdb]
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_pass
+    volumes:
+      - "./data:/var/lib/postgresql/data"
+      - "./01-bootstrap-pg.sql:/docker-entrypoint-initdb.d/01-bootstrap-pg.sql:ro"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app_user -d appdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

@@ -1,0 +1,2 @@
+id,layer,symptom,exact_error,sqlstate,failing_statement,root_cause,workaround,workaround_worked,fix_owner,severity,reference
+GAP-000,L2,EXAMPLE ROW - delete before use. Liquibase schema migration rejected,explicit transaction involving a schema change needs to be SERIALIZABLE,25000,CREATE TABLE ...,CRDB rejects DDL inside explicit READ COMMITTED transactions,ALTER ROLE camunda_user SET autocommit_before_ddl = on,UNKNOWN,Either,Blocker,https://github.com/cockroachdb/cockroach/issues/114778

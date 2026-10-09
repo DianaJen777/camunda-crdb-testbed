@@ -1,0 +1,19 @@
+id,layer,scenario,target,isolation,concurrency,expected,actual,status,evidence_path,notes
+L1-01,L1,SELECT customer by PAN via SQL Connector,CRDB,SER,1,Row returned,,NOT RUN,,
+L1-02,L1,UPDATE kyc_status via SQL Connector,CRDB,SER,1,1 row modified,,NOT RUN,,
+L1-03,L1,INSERT kyc_audit with JSONB via SQL Connector,CRDB,SER,1,Row present in kyc_audit,,NOT RUN,,
+L1-04,L1,Contended read-modify-write via job worker,CRDB,SER,20,Non-zero 40001 retries / incidents,,NOT RUN,,HEADLINE A/B arm 1
+L1-05,L1,Contended read-modify-write via job worker,CRDB,RC,20,Zero isolation-related incidents,,NOT RUN,,HEADLINE A/B arm 2
+L1-06,L1,Job worker with client-side 40001 retry loop,CRDB,SER,20,Zero incidents; N internal retries,,NOT RUN,,Proves the production pattern
+L1-07,L1,Large result set exceeding 16KiB buffer,CRDB,RC,1,Streams without transparent retry,,NOT RUN,,Buffer edge case
+L1-08,L1,Node kill mid-run,CRDB,RC,20,Workflows continue completing,,NOT RUN,,RESILIENCE PROOF
+L1-C1,L1,Contended read-modify-write via job worker,Postgres control,RC,20,Baseline for comparison,,NOT RUN,,Control column
+L1-C2,L1,Node kill equivalent,Postgres control,RC,20,Total outage expected,,NOT RUN,,Control cannot survive this
+L2-01,L2,Orchestration Cluster boots against CRDB,CRDB,SER,n/a,Clean startup,,NOT RUN,,results/l2_startup.log
+L2-02,L2,Dialect detection resolves PostgreSQL,CRDB,SER,n/a,PG dialect selected,,NOT RUN,,
+L2-03,L2,Schema creation / Liquibase migration applies,CRDB,RC,n/a,All DDL applied,,NOT RUN,,EXPECTED FAILURE POINT
+L2-04,L2,Process instance renders in Operate,CRDB,RC,1,Instance visible with variables,,NOT RUN,,
+L2-05,L2,Variable search / sort / pagination,CRDB,RC,1,Correct results and ordering,,NOT RUN,,Collation check vs control
+L2-06,L2,Exporter sustained throughput,CRDB,RC,50,No exporter backlog,,NOT RUN,,Watch disk IO and CPU
+L2-07,L2,Incident and retry rendering in Operate,CRDB,RC,20,Incidents render correctly,,NOT RUN,,
+L2-08,L2,256-character string limit behaviour,CRDB,RC,1,Documented truncation or error,,NOT RUN,,Known RDBMS limitation

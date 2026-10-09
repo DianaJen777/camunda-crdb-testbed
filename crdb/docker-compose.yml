@@ -1,0 +1,51 @@
+# 3-node CockroachDB cluster for the Camunda integration testbed.
+#
+# Three nodes is NOT optional. A single node hides the contention and retry
+# behaviour that this entire test exists to measure.
+#
+#   SQL:        localhost:26257
+#   DB Console: http://localhost:8081
+#
+# Keep the DB Console's "Transaction Retries" and "SQL Activity" pages open
+# during every run — they are a primary evidence source.
+
+name: camunda-crdb
+
+networks:
+  camunda-crdb:
+    name: camunda-crdb
+
+x-crdb: &crdb
+  image: cockroachdb/cockroach:v25.4.0
+  networks: [camunda-crdb]
+  volumes:
+    - "./data:/cockroach/cockroach-data"
+
+services:
+  crdb-0:
+    <<: *crdb
+    container_name: crdb-0
+    hostname: crdb-0
+    ports:
+      - "26257:26257"
+      - "8081:8080"
+    command: start --insecure --join=crdb-0,crdb-1,crdb-2 --advertise-addr=crdb-0
+
+  crdb-1:
+    <<: *crdb
+    container_name: crdb-1
+    hostname: crdb-1
+    command: start --insecure --join=crdb-0,crdb-1,crdb-2 --advertise-addr=crdb-1
+
+  crdb-2:
+    <<: *crdb
+    container_name: crdb-2
+    hostname: crdb-2
+    command: start --insecure --join=crdb-0,crdb-1,crdb-2 --advertise-addr=crdb-2
+
+  crdb-init:
+    <<: *crdb
+    container_name: crdb-init
+    depends_on: [crdb-0, crdb-1, crdb-2]
+    command: init --insecure --host=crdb-0
+    restart: on-failure

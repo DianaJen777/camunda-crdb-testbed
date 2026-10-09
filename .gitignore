@@ -1,0 +1,25 @@
+# CockroachDB data volumes
+crdb/data/
+control/data/
+
+# Downloaded Camunda distribution
+c8/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Evidence artefacts (keep the dirs, ignore large binaries)
+results/evidence/**/*.png
+results/evidence/**/*.jpg
+results/evidence/**/*.zip
+results/evidence/**/incidents.json
+
+# Logs
+*.log
+!results/.gitkeep
+
+# macOS
+.DS_Store
